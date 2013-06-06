@@ -41,8 +41,8 @@ class UIDFixerView(BrowserView):
             'href': href,
             'resolved': not not uid,
             'resolved_url':
-                (uid and
-                    portal_catalog(UID=uid)[0].getObject().absolute_url()),
+                (portal_catalog(UID=uid) and
+                    portal_catalog(UID=uid).getObject().absolute_url()),
         } for context, field, href, uid in self.fix(self.context)]
 
     def fix(self, context, processed_portlets=None):
@@ -117,6 +117,9 @@ class UIDFixerView(BrowserView):
         if '/resolveuid/' in href:
             _, uid = href.split('/resolveuid/')
             return uid
+        elif '/resolveUid/' in href and self.request.get('fck'):
+            _, uid = href.split('/resolveUid/')
+            return uid
         else:
             try:
                 context = self.resolve_redirector(href, context)
@@ -172,7 +175,7 @@ class UIDFixerView(BrowserView):
                     href = href[:href.find(s)]
             html = html.replace(match.group(0), '')
             scheme, netloc, path, params, query, fragment = urlparse(href)
-            if not scheme and not href.startswith('resolveuid/'):
+            if not scheme and not href.lower().startswith('resolveuid/'):
                 # relative link, convert to resolveuid one
                 uid = self.convert_link(href, context)
                 yield href, uid

@@ -21,6 +21,13 @@
       </p>
       <form method="post">
         <div class="field">
+          <input type="checkbox" name="fck" id="fck" />
+          <label for="fck">
+            Change resolveUid to resolveuid links (FCKeditor relative links, these
+            break when you switch to TinyMCE).
+          </label>
+        </div>
+        <div class="field">
           <input type="checkbox" name="dry" id="dry" />
           <label for="dry">
             Dry run (don't actually fix anything).
