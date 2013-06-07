@@ -42,7 +42,7 @@ class UIDFixerView(BrowserView):
             'resolved': not not uid,
             'resolved_url':
                 (portal_catalog(UID=uid) and
-                    portal_catalog(UID=uid).getObject().absolute_url()),
+                    portal_catalog(UID=uid)[0].getObject().absolute_url()),
         } for context, field, href, uid in self.fix(self.context)]
 
     def fix(self, context, processed_portlets=None):
@@ -101,6 +101,7 @@ class UIDFixerView(BrowserView):
             html = field.getRaw(context)
             fixed = False
             for href, uid in self.find_uids(html, context):
+                #import pdb ; pdb.set_trace()
                 if not uid:
                     # html = html.replace(href, 'UNRESOLVED:/%s' % (uid,))
                     pass
@@ -108,6 +109,9 @@ class UIDFixerView(BrowserView):
                     html = html.replace(
                         'href="%s' % (href,),
                         'href="resolveuid/%s' % (uid,))
+                    html = html.replace(
+                        'src="%s' % (href,),
+                        'src="resolveuid/%s' % (uid,))
                 fixed = True
                 yield context, field, href, uid
             if fixed and not self.request.get('dry'):
@@ -117,8 +121,8 @@ class UIDFixerView(BrowserView):
         if '/resolveuid/' in href:
             _, uid = href.split('/resolveuid/')
             return uid
-        elif '/resolveUid/' in href and self.request.get('fck'):
-            _, uid = href.split('/resolveUid/')
+        elif 'resolveUid/' in href and self.request.get('fck'):
+            _, uid = href.split('resolveUid/')
             return uid
         else:
             try:
@@ -161,6 +165,8 @@ class UIDFixerView(BrowserView):
         return context
 
     _reg_href = re.compile(r'href="([^"]+)"')
+    _reg_src = re.compile(r'src="([^"]+)"')
+    
     def find_uids(self, html, context):
         while True:
             match = self._reg_href.search(html)
@@ -179,3 +185,24 @@ class UIDFixerView(BrowserView):
                 # relative link, convert to resolveuid one
                 uid = self.convert_link(href, context)
                 yield href, uid
+        #Rince and repeat for images
+        while True:
+            match = self._reg_src.search(html)
+            if not match:
+                break
+            src = match.group(1)
+            # leave any views, GET vars and hashes alone
+            # not entirely correct, but this seems
+            # relatively solid
+            for s in ('@@', '?', '#', '++','/image_'):
+                if s in src:
+                    src = src[:src.find(s)]
+            #import pdb; pdb.set_trace()
+            html = html.replace(match.group(0), '')
+            scheme, netloc, path, params, query, fragment = urlparse(src)
+            if not scheme and not src.lower().startswith('resolveuid/'):
+                # relative link, convert to resolveuid one
+                uid = self.convert_link(src, context)
+                yield src, uid
+       
+          
