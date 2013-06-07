@@ -21,14 +21,21 @@
       </p>
       <form method="post">
         <div class="field">
-          <input type="checkbox" name="fck" id="fck" />
-          <label for="fck">
-            Change resolveUid to resolveuid links (FCKeditor relative links, these
-            break when you switch to TinyMCE).
+          <input type="checkbox" checked="checked" name="fix_relative" id="fix_relative" />
+          <label for="fix_relative">
+            Convert relative links into resolveuid links
           </label>
         </div>
         <div class="field">
-          <input type="checkbox" name="dry" id="dry" />
+          <input type="checkbox" checked="checked" name="fix_resolveuid" id="fix_resolveuid" />
+          <label for="fix_resolveuid">
+            Sanitize existing resolveuid links. Notably: FCKeditor creates
+            resolveUid links with a capital U that breaks in TinyMCE, IE
+            sometimes generates absolute links /resolveuid/ .                     
+          </label>
+        </div>
+        <div class="field">
+          <input type="checkbox" checked="checked" name="dry" id="dry" />
           <label for="dry">
             Dry run (don't actually fix anything).
           </label>

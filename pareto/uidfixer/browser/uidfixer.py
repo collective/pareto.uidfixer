@@ -118,13 +118,15 @@ class UIDFixerView(BrowserView):
                 field.set(context, html)
 
     def convert_link(self, href, context):
-        if '/resolveuid/' in href:
+        if '/resolveuid/' in href and self.request.get('fix_resolveuid'):
+            # IE absolute links
             _, uid = href.split('/resolveuid/')
-            return uid
-        elif 'resolveUid/' in href and self.request.get('fck'):
+                return uid
+        elif 'resolveUid/' in href and self.request.get('fix_resolveuid'):
+            # FCK Editor ./ and capitalised U links
             _, uid = href.split('resolveUid/')
             return uid
-        else:
+        elif self.request.get('fix_relative'):
             try:
                 context = self.resolve_redirector(href, context)
             except (KeyError, AttributeError):
