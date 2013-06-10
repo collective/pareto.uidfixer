@@ -121,7 +121,7 @@ class UIDFixerView(BrowserView):
         if '/resolveuid/' in href and self.request.get('fix_resolveuid'):
             # IE absolute links
             _, uid = href.split('/resolveuid/')
-                return uid
+            return uid
         elif 'resolveUid/' in href and self.request.get('fix_resolveuid'):
             # FCK Editor ./ and capitalised U links
             _, uid = href.split('resolveUid/')
