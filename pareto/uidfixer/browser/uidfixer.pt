@@ -35,6 +35,13 @@
           </label>
         </div>
         <div class="field">
+          <input type="checkbox" checked="checked" name="fix_portlets" id="fix_portlets" />
+          <label for="fix_portlets">
+            Try to fix html code in portlets as well.                      
+          </label>
+        </div>
+
+        <div class="field">
           <input type="checkbox" checked="checked" name="dry" id="dry" />
           <label for="dry">
             Dry run (don't actually fix anything).

@@ -52,9 +52,11 @@ class UIDFixerView(BrowserView):
             if isinstance(context, base.ATCTContent):
                 for info in self.process_content(context):
                     yield info
-            # process portlets, both Plone ones and those from Collage
-            for info in self.process_portlets(context, processed_portlets):
-                yield info
+            if self.request.get('fix_portlets'):
+                # process portlets, both Plone ones and those from Collage
+                for info in self.process_portlets(context, processed_portlets):
+                    yield info
+            # Recurse the children
             for item in context.objectValues():
                 for info in self.fix(item, processed_portlets):
                     yield info
@@ -84,9 +86,7 @@ class UIDFixerView(BrowserView):
                                     'href="%s' % (href,),
                                     'href="resolveuid/%s' % (uid,))
                                 fixed = True
-                            yield (
-                                context, portlet,
-                                href, uid)
+                            yield (context, portlet,href, uid)
                         if fixed and not self.request.get('dry'):
                             assignment.text = html
                             assignment._p_changed = True
@@ -101,7 +101,6 @@ class UIDFixerView(BrowserView):
             html = field.getRaw(context)
             fixed = False
             for href, uid in self.find_uids(html, context):
-                #import pdb ; pdb.set_trace()
                 if not uid:
                     # html = html.replace(href, 'UNRESOLVED:/%s' % (uid,))
                     pass
@@ -113,7 +112,7 @@ class UIDFixerView(BrowserView):
                         'src="%s' % (href,),
                         'src="resolveuid/%s' % (uid,))
                 fixed = True
-                yield context, field, href, uid
+                yield (context, fieldname, href, uid)
             if fixed and not self.request.get('dry'):
                 field.set(context, html)
 
@@ -128,11 +127,15 @@ class UIDFixerView(BrowserView):
             return uid
         elif self.request.get('fix_relative'):
             try:
-                context = self.resolve_redirector(href, context)
+                context2 = self.resolve_redirector(href, context)
             except (KeyError, AttributeError):
                 pass
             else:
-                return context.UID()
+                try:
+                    return context2.UID()
+                except AttributeError:
+                    pass
+
 
     def resolve_redirector(self, href, context):
         redirector = getUtility(IRedirectionStorage)

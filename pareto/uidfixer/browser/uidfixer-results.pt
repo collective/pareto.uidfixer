@@ -30,9 +30,7 @@
         <table border="1" style="font-size: 10px">
           <thead>
             <tr>
-              <th colspan="3">URL of document containing link</th>
-            </tr>
-            <tr>
+              <th>URL of document containing link</th>
               <th>field</th>
               <th>link href</th>
               <th>found target url</th>
@@ -41,13 +39,11 @@
           <tbody>
             <tal:block repeat="result results">
               <tr>
-                <td style="white-space: nowrap" colspan="3">
+                <td style="white-space: nowrap">
                   <a tal:attributes="href result/object/absolute_url; class python:result['resolved'] and 'resolved' or 'unresolved'; style python:result['resolved'] and 'color: blue' or 'color: red'" tal:content="python: '...' + result['object'].absolute_url()[-80:]"></a>
                 </td>
-              </tr>
-              <tr>
                 <td>
-                  <strong tal:content="result/field/name|nothing"></strong>
+                  <strong tal:content="result/field|nothing"></strong>
                 </td>
                 <td style="white-space: nowrap">
                   <em tal:content="result/href"></em>
