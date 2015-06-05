@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.3dev3 (unreleased)
--------------------
+0.3 (2015-06-05)
+----------------
 
 - Allow to skip portlet sanitising
 - fix reporting of the field type

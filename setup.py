@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '0.3.dev2'
+version = '0.3'
 
 setup(name='pareto.uidfixer',
       version=version,
