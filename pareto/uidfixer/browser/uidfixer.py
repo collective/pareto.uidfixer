@@ -103,7 +103,7 @@ class UIDFixerView(BrowserView):
             for href, uid in self.find_uids(html, context):
                 if not uid:
                     # html = html.replace(href, 'UNRESOLVED:/%s' % (uid,))
-                    pass
+                    continue
                 else:
                     html = html.replace(
                         'href="%s' % (href,),
@@ -139,6 +139,12 @@ class UIDFixerView(BrowserView):
 
     def resolve_redirector(self, href, context):
         redirector = getUtility(IRedirectionStorage)
+
+        skip_links = self.request.get('skip_links','').splitlines()
+
+        if skip_links and any([link in href for link in skip_links if link]):
+            raise KeyError
+                
         if href.endswith('/'):
             href = href[:-1]
         chunks = [urllib.unquote(chunk) for chunk in href.split('/')]

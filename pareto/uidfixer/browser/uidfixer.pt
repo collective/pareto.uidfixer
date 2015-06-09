@@ -47,6 +47,12 @@
             Dry run (don't actually fix anything).
           </label>
         </div>
+        <div class="field">
+          <textarea checked="checked" name="skip_links" id="skip_links" ></textarea>
+          <label for="skip_links">
+            Give a number of url parts (one per line) that should never be converted to resolveuid. Useful for links to non content like database-urls that are mapped into the site. 
+          </label>
+        </div>
         <div>
           <input type="submit" name="submit" value="submit"
                  i18n:domain="plone" i18n:attributes="value" />
