@@ -50,7 +50,8 @@
         <div class="field">
           <textarea checked="checked" name="skip_links" id="skip_links" ></textarea>
           <label for="skip_links">
-            Give a number of url parts (one per line) that should never be converted to resolveuid. Useful for links to non content like database-urls that are mapped into the site. 
+            Give a number of url parts (one per line) that should never be converted to resolveuid. Useful for links to non content. <b?Caveat:</b> This filter does not work for
+            relative links in a subfolder where you exclude the subfolder but the link does not contain its name.
           </label>
         </div>
         <div>

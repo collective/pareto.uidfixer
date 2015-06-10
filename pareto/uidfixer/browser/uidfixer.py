@@ -208,7 +208,6 @@ class UIDFixerView(BrowserView):
             for s in ('@@', '?', '#', '++','/image_'):
                 if s in src:
                     src = src[:src.find(s)]
-            #import pdb; pdb.set_trace()
             html = html.replace(match.group(0), '')
             scheme, netloc, path, params, query, fragment = urlparse(src)
             if not scheme and not src.lower().startswith('resolveuid/'):
