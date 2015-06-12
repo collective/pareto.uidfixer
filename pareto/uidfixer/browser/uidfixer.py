@@ -83,8 +83,8 @@ class UIDFixerView(BrowserView):
                         for href, uid, rest in self.find_uids(html, context):
                             if uid:
                                 html = html.replace(
-                                    'href="%s%s"' % (href,test),
-                                    'href="resolveuid/%s%s"' % (uid,test))
+                                    'href="%s%s"' % (href,rest),
+                                    'href="resolveuid/%s%s"' % (uid,rest))
                                 html = html.replace(
                                     'src="%s%s"' % (href, rest),
                                     'src="resolveuid/%s%s"' % (uid,rest))
