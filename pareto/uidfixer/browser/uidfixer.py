@@ -218,7 +218,7 @@ class UIDFixerView(BrowserView):
                     src = src[:src.find(s)]
             html = html.replace(match.group(0), '')
             scheme, netloc, path, params, query, fragment = urlparse(src)
-            if (href and not scheme and not netloc and not src.lower().startswith('resolveuid/')):
+            if (src and not scheme and not netloc and not src.lower().startswith('resolveuid/')):
                 # relative link, convert to resolveuid one
                 uid = self.convert_link(src, context)
                 yield src, uid, rest
