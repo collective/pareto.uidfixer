@@ -4,6 +4,9 @@ Changelog
 0.4 (unreleased)
 ----------------
 
+- Copy fix for replacing remainders in urls like anchors from vs.uidfixer. Disable replacement on internal links with anchors.
+  [fred]
+
 - Add field for lnks that should be skipped. Fix pass/continue in the redirectory lookup
   [fred]
 

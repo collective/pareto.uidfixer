@@ -80,11 +80,14 @@ class UIDFixerView(BrowserView):
                     if hasattr(assignment, 'text'):
                         html = assignment.text
                         fixed = False
-                        for href, uid in self.find_uids(html, context):
+                        for href, uid, rest in self.find_uids(html, context):
                             if uid:
                                 html = html.replace(
-                                    'href="%s' % (href,),
-                                    'href="resolveuid/%s' % (uid,))
+                                    'href="%s%s"' % (href,test),
+                                    'href="resolveuid/%s%s"' % (uid,test))
+                                html = html.replace(
+                                    'src="%s%s"' % (href, rest),
+                                    'src="resolveuid/%s%s"' % (uid,rest))
                                 fixed = True
                             yield (context, portlet,href, uid)
                         if fixed and not self.request.get('dry'):
@@ -100,17 +103,17 @@ class UIDFixerView(BrowserView):
             fieldname = field.getName()
             html = field.getRaw(context)
             fixed = False
-            for href, uid in self.find_uids(html, context):
+            for href, uid, rest in self.find_uids(html, context):
                 if not uid:
                     # html = html.replace(href, 'UNRESOLVED:/%s' % (uid,))
                     continue
                 else:
                     html = html.replace(
-                        'href="%s' % (href,),
-                        'href="resolveuid/%s' % (uid,))
+                        'href="%s%s"' % (href, rest),
+                        'href="resolveuid/%s%s"' % (uid, rest))
                     html = html.replace(
-                        'src="%s' % (href,),
-                        'src="resolveuid/%s' % (uid,))
+                        'src="%s%s"' % (href, rest),
+                        'src="resolveuid/%s%s"' % (uid,rest))
                 fixed = True
                 yield (context, fieldname, href, uid)
             if fixed and not self.request.get('dry'):
@@ -127,12 +130,12 @@ class UIDFixerView(BrowserView):
             return uid
         elif self.request.get('fix_relative'):
             try:
-                context2 = self.resolve_redirector(href, context)
+                context = self.resolve_redirector(href, context)
             except (KeyError, AttributeError):
                 pass
             else:
                 try:
-                    return context2.UID()
+                    return context.UID()
                 except AttributeError:
                     pass
 
@@ -187,15 +190,18 @@ class UIDFixerView(BrowserView):
             # leave any views, GET vars and hashes alone
             # not entirely correct, but this seems
             # relatively solid
+            rest = ''
             for s in ('@@', '?', '#', '++'):
                 if s in href:
+                    rest += href[href.find(s):]
                     href = href[:href.find(s)]
             html = html.replace(match.group(0), '')
             scheme, netloc, path, params, query, fragment = urlparse(href)
-            if not scheme and not href.lower().startswith('resolveuid/'):
+            # import pdb; pdb.set_trace()
+            if (href and not scheme and not netloc and not href.lower().startswith('resolveuid/')):
                 # relative link, convert to resolveuid one
                 uid = self.convert_link(href, context)
-                yield href, uid
+                yield href, uid, rest
         #Rince and repeat for images
         while True:
             match = self._reg_src.search(html)
@@ -205,14 +211,16 @@ class UIDFixerView(BrowserView):
             # leave any views, GET vars and hashes alone
             # not entirely correct, but this seems
             # relatively solid
+            rest = ''
             for s in ('@@', '?', '#', '++','/image_'):
                 if s in src:
+                    rest += src[src.find(s):]
                     src = src[:src.find(s)]
             html = html.replace(match.group(0), '')
             scheme, netloc, path, params, query, fragment = urlparse(src)
-            if not scheme and not src.lower().startswith('resolveuid/'):
+            if (href and not scheme and not netloc and not src.lower().startswith('resolveuid/')):
                 # relative link, convert to resolveuid one
                 uid = self.convert_link(src, context)
-                yield src, uid
+                yield src, uid, rest
        
           
