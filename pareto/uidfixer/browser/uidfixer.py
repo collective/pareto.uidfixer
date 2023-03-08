@@ -106,17 +106,14 @@ class UIDFixerView(BrowserView):
             html = field.getRaw(context)
             fixed = False
             for href, uid, rest, link_type in self.find_uids(html, context):
-                if not uid:
-                    # html = html.replace(href, 'UNRESOLVED:/%s' % (uid,))
-                    continue
-                else:
+                if uid:
                     html = html.replace(
                         'href="%s%s"' % (href, rest),
                         'href="resolveuid/%s%s"' % (uid, rest))
                     html = html.replace(
                         'src="%s%s"' % (href, rest),
                         'src="resolveuid/%s%s"' % (uid,rest))
-                fixed = True
+                    fixed = True
                 yield (context, fieldname, href, uid, link_type)
             if fixed and not self.request.get('dry'):
                 field.set(context, html)
