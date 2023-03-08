@@ -36,7 +36,7 @@ class UIDFixerView(BrowserView):
         """ return a nicely formatted list of objects for a template """
         portal_catalog = self.context.portal_catalog
         return [{
-            'object': context,
+            'source': context.absolute_url(),
             'field': field,
             'link_type': link_type,
             'href': href,
@@ -90,6 +90,7 @@ class UIDFixerView(BrowserView):
                                     'src="%s%s"' % (href, rest),
                                     'src="resolveuid/%s%s"' % (uid,rest))
                                 fixed = True
+                            portlet = "portlet '%s' " % portlet.get('name')
                             yield (context, portlet, href, uid, link_type)
                         if fixed and not self.request.get('dry'):
                             assignment.text = html
