@@ -146,9 +146,10 @@ class UIDFixerView(BrowserView):
 
         if skip_links and any([link in href for link in skip_links if link]):
             raise KeyError
-                
-        if href.endswith('/'):
-            href = href[:-1]
+
+        for suffix in ['/', '/view', '/at_download/file']:
+            if href.endswith(suffix):
+                href = href[:-len(suffix)]
         chunks = [urllib.unquote(chunk) for chunk in href.split('/')]
         while chunks:
             chunk = chunks[0]
@@ -179,7 +180,7 @@ class UIDFixerView(BrowserView):
 
     _reg_href = re.compile(r'href="([^"]+)"')
     _reg_src = re.compile(r'src="([^"]+)"')
-    
+
     def find_uids(self, html, context):
         while True:
             match = self._reg_href.search(html)
@@ -196,7 +197,6 @@ class UIDFixerView(BrowserView):
                     href = href[:href.find(s)]
             html = html.replace(match.group(0), '')
             scheme, netloc, path, params, query, fragment = urlparse(href)
-            # import pdb; pdb.set_trace()
             if (href and not scheme and not netloc and not href.lower().startswith('resolveuid/')):
                 # relative link, convert to resolveuid one
                 uid = self.convert_link(href, context)
