@@ -90,8 +90,8 @@ class UIDFixerView(BrowserView):
                                     'src="%s%s"' % (href, rest),
                                     'src="resolveuid/%s%s"' % (uid,rest))
                                 fixed = True
-                            portlet = "portlet '%s' " % portlet.get('name')
-                            yield (context, portlet, href, uid, link_type)
+                            name = "portlet '%s' " % portlet.get('name')
+                            yield (context, name, href, uid, link_type)
                         if fixed and not self.request.get('dry'):
                             assignment.text = html
                             assignment._p_changed = True
