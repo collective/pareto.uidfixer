@@ -36,14 +36,15 @@ class UIDFixerView(BrowserView):
         """ return a nicely formatted list of objects for a template """
         portal_catalog = self.context.portal_catalog
         return [{
-            'object': context,
+            'source': context.absolute_url(),
             'field': field,
+            'link_type': link_type,
             'href': href,
             'resolved': not not uid,
             'resolved_url':
                 (portal_catalog(UID=uid) and
                     portal_catalog(UID=uid)[0].getObject().absolute_url()),
-        } for context, field, href, uid in self.fix(self.context)]
+        } for context, field, href, uid, link_type in self.fix(self.context)]
 
     def fix(self, context, processed_portlets=None):
         if not context.getId().startswith('portal_'):
@@ -80,7 +81,7 @@ class UIDFixerView(BrowserView):
                     if hasattr(assignment, 'text'):
                         html = assignment.text
                         fixed = False
-                        for href, uid, rest in self.find_uids(html, context):
+                        for href, uid, rest, link_type in self.find_uids(html, context):
                             if uid:
                                 html = html.replace(
                                     'href="%s%s"' % (href,rest),
@@ -89,7 +90,8 @@ class UIDFixerView(BrowserView):
                                     'src="%s%s"' % (href, rest),
                                     'src="resolveuid/%s%s"' % (uid,rest))
                                 fixed = True
-                            yield (context, portlet,href, uid)
+                            name = "portlet '%s' " % portlet.get('name')
+                            yield (context, name, href, uid, link_type)
                         if fixed and not self.request.get('dry'):
                             assignment.text = html
                             assignment._p_changed = True
@@ -103,19 +105,16 @@ class UIDFixerView(BrowserView):
             fieldname = field.getName()
             html = field.getRaw(context)
             fixed = False
-            for href, uid, rest in self.find_uids(html, context):
-                if not uid:
-                    # html = html.replace(href, 'UNRESOLVED:/%s' % (uid,))
-                    continue
-                else:
+            for href, uid, rest, link_type in self.find_uids(html, context):
+                if uid:
                     html = html.replace(
                         'href="%s%s"' % (href, rest),
                         'href="resolveuid/%s%s"' % (uid, rest))
                     html = html.replace(
                         'src="%s%s"' % (href, rest),
                         'src="resolveuid/%s%s"' % (uid,rest))
-                fixed = True
-                yield (context, fieldname, href, uid)
+                    fixed = True
+                yield (context, fieldname, href, uid, link_type)
             if fixed and not self.request.get('dry'):
                 field.set(context, html)
 
@@ -147,9 +146,10 @@ class UIDFixerView(BrowserView):
 
         if skip_links and any([link in href for link in skip_links if link]):
             raise KeyError
-                
-        if href.endswith('/'):
-            href = href[:-1]
+
+        for suffix in ['/', '/view', '/at_download/file']:
+            if href.endswith(suffix):
+                href = href[:-len(suffix)]
         chunks = [urllib.unquote(chunk) for chunk in href.split('/')]
         while chunks:
             chunk = chunks[0]
@@ -180,7 +180,7 @@ class UIDFixerView(BrowserView):
 
     _reg_href = re.compile(r'href="([^"]+)"')
     _reg_src = re.compile(r'src="([^"]+)"')
-    
+
     def find_uids(self, html, context):
         while True:
             match = self._reg_href.search(html)
@@ -197,12 +197,11 @@ class UIDFixerView(BrowserView):
                     href = href[:href.find(s)]
             html = html.replace(match.group(0), '')
             scheme, netloc, path, params, query, fragment = urlparse(href)
-            # import pdb; pdb.set_trace()
             if (href and not scheme and not netloc and not href.lower().startswith('resolveuid/')):
                 # relative link, convert to resolveuid one
                 uid = self.convert_link(href, context)
-                yield href, uid, rest
-        #Rince and repeat for images
+                yield href, uid, rest, 'a'
+        # Rinse and repeat for images
         while True:
             match = self._reg_src.search(html)
             if not match:
@@ -221,6 +220,4 @@ class UIDFixerView(BrowserView):
             if (src and not scheme and not netloc and not src.lower().startswith('resolveuid/')):
                 # relative link, convert to resolveuid one
                 uid = self.convert_link(src, context)
-                yield src, uid, rest
-       
-          
+                yield src, uid, rest, 'img'
